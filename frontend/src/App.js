@@ -1,5 +1,4 @@
 // src/App.js
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
 import React, { useState, useEffect } from 'react';
 import './App.css';
 import NewsFeed from './components/NewsFeed';
@@ -12,7 +11,7 @@ import Signup from './components/Signup';
 // Import Font Awesome icons and components
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faMoon, faSun, faArrowLeft, faSave, faBookmark } from '@fortawesome/free-solid-svg-icons';
-
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
 function App() {
   const [selectedArticle, setSelectedArticle] = useState(null);
   const [theme, setTheme] = useState('light');

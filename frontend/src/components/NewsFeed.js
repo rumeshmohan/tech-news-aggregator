@@ -1,10 +1,9 @@
 // src/components/NewsFeed.js
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
 import React, { useState, useEffect, useCallback } from 'react';
 import './NewsFeed.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSpinner } from '@fortawesome/free-solid-svg-icons';
-
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
 const NewsFeed = ({ onArticleSelect, dateFilter, categoryFilter }) => {
     const [articles, setArticles] = useState([]);
     const [loading, setLoading] = useState(true);
