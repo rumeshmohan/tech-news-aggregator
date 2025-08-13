@@ -1,0 +1,9 @@
+fastapi
+uvicorn[standard]
+python-dotenv
+pymongo
+passlib[bcrypt]
+requests
+feedparser
+beautifulsoup4
+lxml
