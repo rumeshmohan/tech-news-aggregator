@@ -1,5 +1,5 @@
 // src/components/NewsFeed.js
-
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
 import React, { useState, useEffect, useCallback } from 'react';
 import './NewsFeed.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
