@@ -181,25 +181,30 @@ def signup(user: User):
 
 @app.post("/api/login")
 def login(user: User):
-    # Handle the specific test user
-    if user.username == "testuser" and user.password == "testpass":
-        test_user = users_collection.find_one({"username": "testuser"})
-        if not test_user:
-            hashed_password = get_password_hash("testpass")
-            result = users_collection.insert_one({"username": "testuser", "password": hashed_password})
-            user_id = str(result.inserted_id)
-        else:
-            user_id = str(test_user["_id"])
+    try:
+        # Handle the specific test user
+        if user.username == "testuser" and user.password == "testpass":
+            test_user = users_collection.find_one({"username": "testuser"})
+            if not test_user:
+                hashed_password = get_password_hash("testpass")
+                result = users_collection.insert_one({"username": "testuser", "password": hashed_password})
+                user_id = str(result.inserted_id)
+            else:
+                user_id = str(test_user["_id"])
+            
+            return {"message": "Login successful", "user_id": user_id}
         
-        return {"message": "Login successful", "user_id": user_id}
-    
-    db_user = users_collection.find_one({"username": user.username})
-    if not db_user or not verify_password(user.password, db_user["password"]):
-        # This is where the error likely occurred
-        raise HTTPException(status_code=400, detail="Incorrect username or password")
+        db_user = users_collection.find_one({"username": user.username})
+        
+        if not db_user or not verify_password(user.password, db_user["password"]):
+            raise HTTPException(status_code=400, detail="Incorrect username or password")
 
-    # This is the successful JSON response
-    return {"message": "Login successful", "user_id": str(db_user["_id"])}
+        return {"message": "Login successful", "user_id": str(db_user["_id"])}
+
+    except Exception as e:
+        # Catch any unexpected errors, including database connection issues
+        print(f"An error occurred during login: {e}")
+        raise HTTPException(status_code=500, detail="An internal server error occurred.")
 
 class ChatMessage(BaseModel):
     message: str
