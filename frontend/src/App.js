@@ -1,5 +1,5 @@
 // src/App.js
-
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
 import React, { useState, useEffect } from 'react';
 import './App.css';
 import NewsFeed from './components/NewsFeed';
@@ -59,7 +59,7 @@ function App() {
         return;
     }
     try {
-        const response = await fetch('http://localhost:8000/api/bookmarks', {
+        const response = await fetch('${API_BASE_URL}/api/bookmarks', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

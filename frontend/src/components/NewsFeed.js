@@ -24,7 +24,7 @@ const NewsFeed = ({ onArticleSelect, dateFilter, categoryFilter }) => {
                 params.append('category', categoryFilter);
             }
 
-            const response = await fetch(`http://localhost:8000/api/news?${params.toString()}`);
+            const response = await fetch(`${API_BASE_URL}/api/news?${params.toString()}`);
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
