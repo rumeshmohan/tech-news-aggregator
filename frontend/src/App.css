@@ -1,0 +1,271 @@
+/* src/App.css */
+:root {
+  --background-primary: #ffffff;
+  --background-secondary: #f0f2f5;
+  --background-tertiary: #e4e6eb;
+  --text-primary: #1c1e21;
+  --text-secondary: #65676b;
+  --text-on-primary: #ffffff;
+  --primary-color: #007bff;
+  --primary-color-dark: #0056b3;
+  --primary-color-faded: rgba(0, 123, 255, 0.2);
+  --border-color: #e0e0e0;
+
+  /* Sentiment colors */
+  --sentiment-positive: #28a745;
+  --sentiment-negative: #dc3545;
+  --sentiment-neutral: #6c757d;
+}
+
+body.dark-theme {
+  --background-primary: #18191a;
+  --background-secondary: #242526;
+  --background-tertiary: #3a3b3c;
+  --text-primary: #e4e6eb;
+  --text-secondary: #b0b3b8;
+  --text-on-primary: #ffffff;
+  --primary-color: #007bff;
+  --primary-color-dark: #0056b3;
+  --primary-color-faded: rgba(0, 123, 255, 0.2);
+  --border-color: #444;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 20px;
+  background-color: var(--background-primary);
+  color: var(--text-primary);
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.header-controls {
+  display: flex;
+  gap: 10px;
+}
+
+.theme-toggle, .logout-button, .saved-articles-button {
+  background-color: var(--background-secondary);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  padding: 8px 12px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.dashboard-container {
+  display: grid;
+  grid-template-columns: 1fr 3fr;
+  gap: 20px;
+}
+
+.news-feed, .trending-topics {
+  padding: 15px;
+  background-color: var(--background-secondary);
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.news-item {
+  padding: 15px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  margin-bottom: 10px;
+  cursor: pointer;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.news-item:hover, .news-item:active {
+  transform: scale(1.03);
+  box-shadow: 4px 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+.article-details-and-chat-container {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+}
+
+.article-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.main-article-content-wrapper {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 20px;
+}
+
+.selected-article-display {
+  background-color: var(--background-secondary);
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.chat-interface-wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 600px;
+}
+
+.back-button, .save-button {
+  background-color: var(--primary-color);
+  color: var(--text-on-primary);
+  border: none;
+  padding: 10px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.back-button:hover, .save-button:hover {
+  background-color: var(--primary-color-dark);
+}
+
+.filter-controls {
+  margin-bottom: 20px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.filter-controls button, .filter-controls select {
+  background-color: var(--background-secondary);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  padding: 8px 12px;
+  border-radius: 5px;
+  cursor: pointer;
+  min-width: 120px;
+  box-sizing: border-box;
+}
+
+.filter-controls button.active {
+  background-color: var(--primary-color);
+  color: var(--text-on-primary);
+}
+
+.filter-controls select {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%2365676b%22%20d%3D%22M287%20165.7l-132.8%20132.8c-3.1%203.1-7.2%204.7-11.4%204.7s-8.3-1.6-11.4-4.7L5.4%20165.7c-6.2-6.2-6.2-16.4%200-22.6s16.4-6.2%2022.6%200l114.4%20114.4L264.4%20143c6.2-6.2%2016.4-6.2%2022.6%200s6.2%2016.4%200%2022.6z%22%2F%3E%3C%2Fsvg%3E');
+  background-repeat: no-repeat;
+  background-position: right 10px top 50%;
+  background-size: 10px;
+  padding-right: 25px;
+}
+
+.sentiment-positive {
+  color: var(--sentiment-positive);
+  font-weight: bold;
+}
+
+.sentiment-negative {
+  color: var(--sentiment-negative);
+  font-weight: bold;
+}
+
+.sentiment-neutral {
+  color: var(--sentiment-neutral);
+  font-weight: bold;
+}
+
+.auth-form {
+    max-width: 400px;
+    margin: 50px auto;
+    padding: 20px;
+    background-color: var(--background-secondary);
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    text-align: center;
+}
+
+.auth-form h2 {
+    margin-bottom: 20px;
+}
+
+.auth-form input {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 5px;
+    box-sizing: border-box;
+}
+
+.auth-form button[type="submit"] {
+    width: 100%;
+    background-color: var(--primary-color);
+    color: var(--text-on-primary);
+    border: none;
+    padding: 12px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.auth-form .link-button {
+    background: none;
+    border: none;
+    color: var(--primary-color);
+    cursor: pointer;
+    text-decoration: underline;
+    padding: 0;
+    margin-left: 5px;
+}
+
+/* --- Mobile Responsiveness --- */
+
+/* Adjust dashboard layout for smaller screens */
+@media (max-width: 768px) {
+  .dashboard-container {
+    grid-template-columns: 1fr;
+  }
+
+  .trending-topics {
+    margin-bottom: 20px;
+  }
+}
+
+/* Adjust article and chat layout for smaller screens */
+@media (max-width: 600px) {
+  .app-header {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .main-article-content-wrapper {
+    grid-template-columns: 1fr;
+  }
+
+  .article-details-and-chat-container {
+    padding: 0;
+  }
+
+  .article-header {
+    flex-direction: column;
+    gap: 10px;
+    align-items: flex-start;
+  }
+
+  .selected-article-display {
+    padding: 10px;
+  }
+
+  .chat-interface-wrapper {
+    height: 400px;
+  }
+}

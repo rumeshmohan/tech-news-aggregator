@@ -1,0 +1,30 @@
+/* src/components/TrendingTopics.css */
+
+.trending-topics {
+    padding: 15px;
+    background-color: var(--background-secondary);
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.trending-topics h3 {
+    margin-top: 0;
+    font-size: 1.2rem;
+}
+
+.trending-topics ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.trending-topics li {
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border-color);
+    font-size: 1rem;
+    color: var(--text-primary);
+}
+
+.trending-topics li:last-child {
+    border-bottom: none;
+}
