@@ -35,7 +35,7 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 # CORS Configuration
 origins = [
-    "http://localhost:3000",
+    "https://vercel.com/rumeshmohans-projects/tech-news-aggregator",
 ]
 app.add_middleware(
     CORSMiddleware,
