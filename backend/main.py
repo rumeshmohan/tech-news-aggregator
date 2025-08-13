@@ -181,6 +181,7 @@ def signup(user: User):
 
 @app.post("/api/login")
 def login(user: User):
+    # Handle the specific test user
     if user.username == "testuser" and user.password == "testpass":
         test_user = users_collection.find_one({"username": "testuser"})
         if not test_user:
@@ -194,7 +195,10 @@ def login(user: User):
     
     db_user = users_collection.find_one({"username": user.username})
     if not db_user or not verify_password(user.password, db_user["password"]):
+        # This is where the error likely occurred
         raise HTTPException(status_code=400, detail="Incorrect username or password")
+
+    # This is the successful JSON response
     return {"message": "Login successful", "user_id": str(db_user["_id"])}
 
 class ChatMessage(BaseModel):
