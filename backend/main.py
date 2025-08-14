@@ -1,5 +1,4 @@
 # main.py
-
 import os
 import json
 import requests
@@ -15,17 +14,18 @@ from pymongo import MongoClient
 from bson import ObjectId
 import time
 
-# New imports for authentication and CORS
+# New imports for authentication, CORS, and Groq API
 from passlib.context import CryptContext
 from fastapi.middleware.cors import CORSMiddleware
+from groq import Groq
 
 # Load environment variables from .env file
 load_dotenv()
 
 # FastAPI and MongoDB setup
 app = FastAPI()
-client = MongoClient(os.getenv("MONGO_CONNECTION_STRING"))
-db = client.tech_news_db
+client_mongo = MongoClient(os.getenv("MONGO_CONNECTION_STRING"))
+db = client_mongo.tech_news_db
 news_collection = db.articles
 bookmarks_collection = db.bookmarks
 users_collection = db.users
@@ -46,9 +46,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Ollama configuration
-OLLAMA_API_URL = os.getenv("OLLAMA_API_URL")
-OLLAMA_MODEL = "llama3.2:latest"
+# Groq configuration - The API key is now handled by the environment.
+groq_client = Groq()
+GROQ_MODEL = "llama-3.3-70b-versatile" # Using the fast Llama 3 8B model
 
 RSS_FEEDS = [
     "https://feeds.feedburner.com/TechCrunch/",
@@ -57,40 +57,41 @@ RSS_FEEDS = [
 ]
 
 def analyze_sentiment(text: str) -> str:
-    """Uses Ollama API to determine the sentiment of a text."""
-    if not OLLAMA_API_URL:
-        return "neutral"
-    prompt = f"Analyze the sentiment of the following text as either 'positive', 'negative', or 'neutral'. Respond with only the word.\n\nText: {text}"
-    payload = {
-        "model": OLLAMA_MODEL,
-        "prompt": prompt,
-        "stream": False,
-    }
+    """Uses Groq API to determine the sentiment of a text."""
     try:
-        response = requests.post(f"{OLLAMA_API_URL}/api/generate", json=payload, timeout=30)
-        response.raise_for_status()
-        return response.json()['response'].lower().strip()
-    except (requests.exceptions.RequestException, KeyError) as e:
-        print(f"Error in sentiment analysis: {e}")
+        completion = groq_client.chat.completions.create(
+            model=GROQ_MODEL,
+            messages=[
+                {"role": "system", "content": "You are a sentiment analysis bot. Respond with only 'positive', 'negative', or 'neutral'."},
+                {"role": "user", "content": f"Analyze the sentiment of the following text:\n\nText: {text}"}
+            ],
+            temperature=0.0, # Set to 0 for consistent, non-creative responses
+            max_tokens=10,
+        )
+        sentiment = completion.choices[0].message.content.lower().strip()
+        if sentiment in ['positive', 'negative', 'neutral']:
+            return sentiment
+        return "neutral"
+    except Exception as e:
+        print(f"Error in sentiment analysis with Groq: {e}")
         return "neutral"
 
 def categorize_article(title: str, content: str) -> str:
-    """Uses Ollama API to categorize an article robustly."""
-    if not OLLAMA_API_URL:
-        return "Miscellaneous"
+    """Uses Groq API to categorize an article."""
     categories = ["AI/ML", "Startups", "Cybersecurity", "Mobile", "Web3"]
-    prompt = f"Categorize the following tech article into one of these categories: {', '.join(categories)}. Respond with only the category name.\n\nTitle: {title}\nContent: {content[:500]}..."
+    prompt = f"Categorize the following tech article into one of these categories: {', '.join(categories)}. Respond with only the category name, or 'Miscellaneous' if none apply.\n\nTitle: {title}\nContent: {content[:500]}..."
     
     try:
-        payload = {
-            "model": OLLAMA_MODEL,
-            "prompt": prompt,
-            "stream": False,
-        }
-        response = requests.post(f"{OLLAMA_API_URL}/api/generate", json=payload, timeout=30)
-        response.raise_for_status()
-        
-        ai_response = response.json()['response'].strip()
+        completion = groq_client.chat.completions.create(
+            model=GROQ_MODEL,
+            messages=[
+                {"role": "system", "content": "You are a tech article categorizer."},
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0.0,
+            max_tokens=30,
+        )
+        ai_response = completion.choices[0].message.content.strip()
         
         for cat in categories:
             if cat.lower() in ai_response.lower():
@@ -98,56 +99,52 @@ def categorize_article(title: str, content: str) -> str:
         
         return "Miscellaneous"
         
-    except (requests.exceptions.RequestException, KeyError) as e:
-        print(f"Error in categorization: {e}")
+    except Exception as e:
+        print(f"Error in categorization with Groq: {e}")
         return "Miscellaneous"
 
-def fetch_and_store_news(article_limit: int = 5):
-    """Fetches news from RSS feeds, processes it, and stores it in MongoDB."""
-    print(f"Fetching initial news data with a limit of {article_limit} articles per feed...")
+def fetch_and_store_news():
+    """Fetches news from RSS feeds and stores it in MongoDB. No article limit is applied."""
+    print("Fetching news data from RSS feeds...")
     for url in RSS_FEEDS:
         print(f"Fetching from {url}...")
         try:
             feed = feedparser.parse(url)
-            count = 0
             for entry in feed.entries:
-                if count >= article_limit:
-                    break
-                response = requests.get(entry.link)
-                soup = BeautifulSoup(response.content, 'lxml')
-                full_content = soup.body.get_text(strip=True, separator=' ')
-
-                if OLLAMA_API_URL:
+                try:
+                    response = requests.get(entry.link, timeout=10)
+                    soup = BeautifulSoup(response.content, 'lxml')
+                    full_content = soup.body.get_text(strip=True, separator=' ')
+                    
                     sentiment = analyze_sentiment(full_content)
                     category = categorize_article(entry.title, full_content)
-                else:
-                    sentiment = "neutral"
-                    category = "Miscellaneous"
-                    
-                article = {
-                    "title": entry.title,
-                    "link": entry.link,
-                    "summary": entry.summary,
-                    "source": feed.feed.title if 'title' in feed.feed else 'Unknown',
-                    "published": datetime(*entry.published_parsed[:6]),
-                    "content": full_content,
-                    "sentiment": sentiment,
-                    "category": category
-                }
-                news_collection.update_one(
-                    {"link": article["link"]},
-                    {"$set": article},
-                    upsert=True
-                )
-                time.sleep(1)
-                count += 1
+
+                    article = {
+                        "title": entry.title,
+                        "link": entry.link,
+                        "summary": entry.summary,
+                        "source": feed.feed.title if 'title' in feed.feed else 'Unknown',
+                        "published": datetime(*entry.published_parsed[:6]),
+                        "content": full_content,
+                        "sentiment": sentiment,
+                        "category": category
+                    }
+                    news_collection.update_one(
+                        {"link": article["link"]},
+                        {"$set": article},
+                        upsert=True
+                    )
+                    time.sleep(1) # Add a delay to avoid rate limiting
+                except Exception as e:
+                    print(f"Error processing article from {url}: {e}")
+                    continue
         except Exception as e:
             print(f"Error fetching from {url}: {e}")
             continue
 
 @app.on_event("startup")
 async def startup_event():
-    fetch_and_store_news(article_limit=1)
+    fetch_and_store_news()
     print("Initial news fetch complete.")
 
 # --- Authentication and User Models ---
@@ -212,9 +209,6 @@ class ChatMessage(BaseModel):
 
 @app.post("/api/chat/{article_id}")
 async def chat_with_ai(article_id: str, chat_message: ChatMessage):
-    if not OLLAMA_API_URL:
-        raise HTTPException(status_code=503, detail="AI assistant is not available at this time.")
-        
     try:
         article = news_collection.find_one({"_id": ObjectId(article_id)})
         if not article:
@@ -229,16 +223,21 @@ async def chat_with_ai(article_id: str, chat_message: ChatMessage):
     )
     try:
         chat_payload = {
-            "model": OLLAMA_MODEL,
+            "model": GROQ_MODEL,
             "messages": [
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": chat_message.message},
             ],
             "stream": False,
         }
-        response = requests.post(f"{OLLAMA_API_URL}/api/chat", json=chat_payload, timeout=60)
-        response.raise_for_status()
-        return {"response": response.json()['message']['content']}
+        completion = groq_client.chat.completions.create(
+            model=GROQ_MODEL,
+            messages=chat_payload['messages'],
+            stream=False,
+            temperature=0.7,
+            max_tokens=500
+        )
+        return {"response": completion.choices[0].message.content}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"AI assistant error: {e}")
 
@@ -271,7 +270,8 @@ def get_news(query: str = None, category: str = None, date_filter: str = None):
     if category and category != "All Categories":
         find_query["category"] = {"$regex": category, "$options": "i"}
     
-    articles = list(news_collection.find(find_query).sort("published", -1).limit(50))
+    # Removed the .limit(50) to return all matching articles
+    articles = list(news_collection.find(find_query).sort("published", -1))
     for article in articles:
         article["_id"] = str(article["_id"])
     return articles
@@ -343,3 +343,4 @@ def get_saved_articles(current_user: dict = Depends(get_current_user)):
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+

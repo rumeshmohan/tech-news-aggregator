@@ -9,7 +9,7 @@ const SavedArticles = ({ currentUser, onArticleSelect }) => {
     useEffect(() => {
         const fetchSavedArticles = async () => {
             try {
-                const response = await fetch('http://localhost:8000/api/bookmarks', {
+                const response = await fetch('https://tech-news-aggregator-production.up.railway.app/api/bookmarks', {
                     headers: {
                         'X-User-Id': currentUser
                     }
