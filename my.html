@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tech News Backend Tester</title>
+    <!-- Use Tailwind CSS for a clean, responsive design -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <div class="max-w-4xl mx-auto bg-white p-6 rounded-2xl shadow-xl">
+        <h1 class="text-3xl font-extrabold text-center mb-6 text-gray-800">Tech News Backend Tester</h1>
+        
+        <!-- Button to fetch the data -->
+        <div class="text-center mb-8">
+            <button id="fetch-button" class="bg-indigo-600 text-white font-semibold py-3 px-6 rounded-xl shadow-lg hover:bg-indigo-700 transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-indigo-500 focus:ring-opacity-50">
+                Fetch Latest Tech News
+            </button>
+        </div>
+
+        <!-- Loading and Error Messages -->
+        <div id="status-message" class="text-center text-lg font-medium text-gray-500 hidden mb-4">
+            Loading news...
+        </div>
+
+        <!-- Container for the news articles -->
+        <div id="news-container" class="space-y-6">
+            <!-- News articles will be injected here by the JavaScript -->
+        </div>
+    </div>
+
+    <script>
+        window.onload = function() {
+            const fetchButton = document.getElementById('fetch-button');
+            const statusMessage = document.getElementById('status-message');
+            const newsContainer = document.getElementById('news-container');
+            
+            // Function to fetch the news from the backend
+            const fetchNews = async () => {
+                // Show a loading message and clear previous content
+                statusMessage.textContent = 'Loading news...';
+                statusMessage.classList.remove('hidden', 'text-red-500'); // Ensure error color is removed
+                newsContainer.innerHTML = '';
+                
+                try {
+                    // Make the fetch request to the backend
+                    const response = await fetch('https://tech-news-aggregator-production.up.railway.app/');
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    
+                    const newsItems = await response.json();
+                    
+                    // Hide the loading message
+                    statusMessage.classList.add('hidden');
+                    
+                    if (newsItems.length === 0) {
+                        newsContainer.innerHTML = `<p class="text-center text-gray-500">No news articles found.</p>`;
+                        return;
+                    }
+
+                    // Loop through the news items and create HTML elements
+                    newsItems.forEach(item => {
+                        const articleDiv = document.createElement('div');
+                        articleDiv.className = 'bg-gray-50 p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300';
+                        
+                        // Create the article title
+                        const title = document.createElement('h2');
+                        title.className = 'text-xl font-bold text-gray-900 mb-2';
+                        title.textContent = item.title || 'No Title Available';
+                        
+                        // Create the article link
+                        const link = document.createElement('a');
+                        link.className = 'text-indigo-600 hover:text-indigo-800 font-medium underline transition-colors duration-200';
+                        link.href = item.url;
+                        link.target = '_blank'; // Open link in a new tab
+                        link.rel = 'noopener noreferrer';
+                        link.textContent = 'Read more';
+
+                        // Create the source information
+                        const source = document.createElement('p');
+                        source.className = 'text-sm text-gray-500 mt-2';
+                        source.textContent = `Source: ${item.source || 'Unknown'}`;
+                        
+                        // Append elements to the article div
+                        articleDiv.appendChild(title);
+                        articleDiv.appendChild(source);
+                        articleDiv.appendChild(link);
+                        
+                        // Append the new article to the container
+                        newsContainer.appendChild(articleDiv);
+                    });
+                    
+                } catch (error) {
+                    console.error('Fetch error:', error);
+                    statusMessage.textContent = `Error: The fetch request failed. This is often caused by a CORS policy. Check your browser's developer console for more details.`;
+                    statusMessage.classList.remove('hidden');
+                    statusMessage.classList.add('text-red-500', 'font-bold');
+                }
+            };
+
+            // Add the event listener to the button
+            fetchButton.addEventListener('click', fetchNews);
+        };
+    </script>
+</body>
+</html>
