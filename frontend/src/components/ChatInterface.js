@@ -19,7 +19,7 @@ const ChatInterface = ({ articleId }) => {
     setIsLoading(true);
 
     try {
-      const response = await fetch(`http://localhost:8000/api/chat/${articleId}`, {
+      const response = await fetch(`https://tech-news-aggregator-production.up.railway.app/api/chat/${articleId}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

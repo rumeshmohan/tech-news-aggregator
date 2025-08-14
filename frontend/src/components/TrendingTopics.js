@@ -10,7 +10,7 @@ const TrendingTopics = () => {
     useEffect(() => {
         const fetchTopics = async () => {
             try {
-                const response = await fetch('http://localhost:8000/api/trending');
+                const response = await fetch('https://tech-news-aggregator-production.up.railway.app/api/trending');
                 const data = await response.json();
                 setTopics(data);
             } catch (error) {

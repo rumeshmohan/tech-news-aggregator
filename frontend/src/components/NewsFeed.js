@@ -3,7 +3,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import './NewsFeed.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSpinner } from '@fortawesome/free-solid-svg-icons';
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
+
 const NewsFeed = ({ onArticleSelect, dateFilter, categoryFilter }) => {
     const [articles, setArticles] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -23,7 +23,7 @@ const NewsFeed = ({ onArticleSelect, dateFilter, categoryFilter }) => {
                 params.append('category', categoryFilter);
             }
 
-            const response = await fetch(`${API_BASE_URL}/api/news?${params.toString()}`);
+            const response = await fetch(`https://tech-news-aggregator-production.up.railway.app/api/news?${params.toString()}`);
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }

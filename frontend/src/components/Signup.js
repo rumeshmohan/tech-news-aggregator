@@ -1,6 +1,6 @@
 // src/components/Signup.js
 import React, { useState } from 'react';
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
+
 function Signup({ onSignupSuccess }) {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
@@ -12,7 +12,7 @@ function Signup({ onSignupSuccess }) {
         setError('');
         setMessage('');
         try {
-            const response = await fetch('${API_BASE_URL}/api/signup', {
+            const response = await fetch('https://tech-news-aggregator-production.up.railway.app/api/signup', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username, password })
