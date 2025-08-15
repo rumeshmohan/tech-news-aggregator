@@ -1,23 +1,20 @@
 // src/components/NewsFeed.js
-
 import React, { useState, useEffect, useCallback } from 'react';
 import './NewsFeed.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSpinner, faSave, faBookmark } from '@fortawesome/free-solid-svg-icons';
+
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'https://tech-news-aggregator-production.up.railway.app';
 
 const NewsFeed = ({ onArticleSelect, onArticleUnsave, onSaveArticle, savedArticleIds, dateFilter, categoryFilter, currentUser }) => {
     const [articles, setArticles] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'https://tech-news-aggregator-production.up.railway.app';
-
-    // This function now uses the props from App.js to toggle the save status
     const handleToggleSave = (articleId, e) => {
         e.stopPropagation();
 
         if (!currentUser) {
-            // App.js now handles showing the toast message
             return;
         }
 

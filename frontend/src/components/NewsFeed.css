@@ -1,0 +1,62 @@
+/* src/components/NewsFeed.css */
+.news-feed-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1rem;
+}
+
+.news-item {
+    padding: 1rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    transition: transform 0.2s;
+    position: relative;
+    background-color: var(--card-bg-light);
+    border: 1px solid var(--border-color-light);
+}
+
+.dark-theme .news-item {
+    background-color: var(--card-bg-dark);
+    border: 1px solid var(--border-color-dark);
+    box-shadow: none;
+}
+
+.news-item:hover {
+    transform: translateY(-5px);
+}
+
+.news-item h2 {
+    font-size: 1.25rem;
+    margin-top: 0;
+}
+
+.news-item p {
+    margin: 0.5rem 0;
+}
+
+.news-feed-message {
+    text-align: center;
+    font-size: 1.2rem;
+    color: var(--text-color-light);
+    margin-top: 2rem;
+}
+
+.dark-theme .news-feed-message {
+    color: var(--text-color-dark);
+}
+
+.save-button {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--link-color-light);
+    font-size: 1.2rem;
+}
+
+.dark-theme .save-button {
+    color: var(--link-color-dark);
+}

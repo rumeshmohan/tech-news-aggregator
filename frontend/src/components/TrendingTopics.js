@@ -1,41 +1,39 @@
 // src/components/TrendingTopics.js
-
 import React, { useState, useEffect } from 'react';
 import './TrendingTopics.css';
 
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'https://tech-news-aggregator-production.up.railway.app';
+
 const TrendingTopics = () => {
-    const [topics, setTopics] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const [trending, setTrending] = useState([]);
 
     useEffect(() => {
-        const fetchTopics = async () => {
+        const fetchTrending = async () => {
             try {
-                const response = await fetch('https://tech-news-aggregator-production.up.railway.app/api/trending');
+                const response = await fetch(`${API_BASE_URL}/api/trending`);
                 const data = await response.json();
-                setTopics(data);
+                setTrending(data);
             } catch (error) {
                 console.error("Error fetching trending topics:", error);
-            } finally {
-                setLoading(false);
             }
         };
 
-        fetchTopics();
+        fetchTrending();
     }, []);
 
-    if (loading) return <div className="trending-topics"><h3>Trending Topics</h3><p>Loading...</p></div>;
-
     return (
-        <div className="trending-topics">
+        <aside className="trending-topics-section">
             <h3>Trending Topics</h3>
             <ul>
-                {topics.map((topic, index) => (
-                    <li key={index}>
-                        {topic.topic} ({topic.count})
-                    </li>
-                ))}
+                {trending.length > 0 ? (
+                    trending.map((topic, index) => (
+                        <li key={index}>{topic.topic} ({topic.count})</li>
+                    ))
+                ) : (
+                    <li>No trending topics available.</li>
+                )}
             </ul>
-        </div>
+        </aside>
     );
 };
 

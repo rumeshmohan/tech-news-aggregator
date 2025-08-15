@@ -1,30 +1,40 @@
 /* src/components/TrendingTopics.css */
-
-.trending-topics {
-    padding: 15px;
-    background-color: var(--background-secondary);
+.trending-topics-section {
+    padding: 1rem;
     border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    background-color: var(--card-bg-light);
+    height: fit-content;
+    border: 1px solid var(--border-color-light);
 }
 
-.trending-topics h3 {
+.dark-theme .trending-topics-section {
+    background-color: var(--card-bg-dark);
+    border: 1px solid var(--border-color-dark);
+    box-shadow: none;
+}
+
+.trending-topics-section h3 {
     margin-top: 0;
-    font-size: 1.2rem;
+    font-size: 1.25rem;
+    border-bottom: 2px solid var(--border-color-light);
+    padding-bottom: 0.5rem;
 }
 
-.trending-topics ul {
+.dark-theme .trending-topics-section h3 {
+    border-bottom: 2px solid var(--border-color-dark);
+}
+
+.trending-topics-section ul {
     list-style: none;
     padding: 0;
-    margin: 0;
 }
 
-.trending-topics li {
-    padding: 8px 0;
-    border-bottom: 1px solid var(--border-color);
-    font-size: 1rem;
-    color: var(--text-primary);
+.trending-topics-section li {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--border-color-light);
 }
 
-.trending-topics li:last-child {
-    border-bottom: none;
+.dark-theme .trending-topics-section li {
+    border-bottom: 1px solid var(--border-color-dark);
 }

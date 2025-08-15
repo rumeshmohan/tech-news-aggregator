@@ -2,13 +2,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import './App.css';
 import NewsFeed from './components/NewsFeed';
-import ChatInterface from './components/ChatInterface';
+import ArticleDetailView from './components/ArticleDetailView';
 import TrendingTopics from './components/TrendingTopics';
 import SavedArticles from './components/SavedArticles';
 import Login from './components/Login';
 import Signup from './components/Signup';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faMoon, faSun, faArrowLeft, faSave, faBookmark } from '@fortawesome/free-solid-svg-icons';
+import { faMoon, faSun, faArrowLeft, faBookmark } from '@fortawesome/free-solid-svg-icons';
 
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'https://tech-news-aggregator-production.up.railway.app';
 
@@ -114,7 +114,6 @@ function App() {
             if (!response.ok) {
                 throw new Error('Failed to save article');
             }
-            // After a successful save, re-fetch the list to keep everything in sync
             fetchSavedArticles();
             showMessage('Article saved successfully!', 'success');
         } catch (error) {
@@ -138,7 +137,6 @@ function App() {
             if (!response.ok) {
                 throw new Error('Failed to unsave article.');
             }
-            // After a successful unsave, re-fetch the list to keep everything in sync
             fetchSavedArticles();
             showMessage("Article unsaved successfully!", "success");
         } catch (error) {
@@ -166,65 +164,15 @@ function App() {
         }
 
         if (selectedArticle) {
-            const isSaved = savedArticleIds.has(selectedArticle._id);
-            const handleToggleSave = () => {
-                if (isSaved) {
-                    handleArticleUnsave(selectedArticle._id);
-                } else {
-                    handleSaveArticle(selectedArticle._id);
-                }
-            };
             return (
-                <>
-                    <header className="app-header">
-                        <h1>Tech News Aggregator</h1>
-                        <div className="header-controls">
-                            <button onClick={toggleTheme} className="theme-toggle">
-                                <FontAwesomeIcon icon={theme === 'light' ? faMoon : faSun} />
-                            </button>
-                            {currentUser && (
-                                <>
-                                    <button onClick={() => setView('saved')} className="saved-articles-button">
-                                        <FontAwesomeIcon icon={faBookmark} /> Saved
-                                    </button>
-                                    <button onClick={handleLogout} className="logout-button">
-                                        Logout
-                                    </button>
-                                </>
-                            )}
-                        </div>
-                    </header>
-                    <main>
-                        <div className="article-details-and-chat-container">
-                            <div className="article-header">
-                                <button onClick={handleBack} className="back-button">
-                                    <FontAwesomeIcon icon={faArrowLeft} /> Back to News Feed
-                                </button>
-                                <div className="article-and-actions">
-                                    <button className="save-button" onClick={handleToggleSave}>
-                                        <FontAwesomeIcon icon={isSaved ? faBookmark : faSave} />
-                                        {isSaved ? ' Unsave Article' : ' Save Article'}
-                                    </button>
-                                </div>
-                            </div>
-                            <div className="main-article-content-wrapper">
-                                <div className="selected-article-display">
-                                    <h2>{selectedArticle.title}</h2>
-                                    <p><strong>Source:</strong> {selectedArticle.source}</p>
-                                    <p><strong>Sentiment:</strong> <span className={`sentiment-${selectedArticle.sentiment.toLowerCase()}`}>{selectedArticle.sentiment}</span></p>
-                                    <p dangerouslySetInnerHTML={{ __html: selectedArticle.summary }}></p>
-                                    <a href={selectedArticle.link} target="_blank" rel="noopener noreferrer">
-                                        Read full article
-                                    </a>
-                                </div>
-                                <div className="chat-interface-wrapper">
-                                    <h3>Chat with AI Assistant</h3>
-                                    <ChatInterface articleId={selectedArticle._id} />
-                                </div>
-                            </div>
-                        </div>
-                    </main>
-                </>
+                <ArticleDetailView 
+                    article={selectedArticle}
+                    onBack={handleBack}
+                    isSaved={savedArticleIds.has(selectedArticle._id)}
+                    onSaveArticle={handleSaveArticle}
+                    onArticleUnsave={handleArticleUnsave}
+                    currentUser={currentUser}
+                />
             );
         }
 
@@ -254,7 +202,6 @@ function App() {
                             <SavedArticles
                                 onArticleSelect={handleArticleSelect}
                                 onArticleUnsave={handleArticleUnsave}
-                                currentUser={currentUser}
                                 savedArticles={savedArticlesList}
                             />
                         </div>
@@ -317,7 +264,6 @@ function App() {
                                 onSaveArticle={handleSaveArticle}
                                 savedArticleIds={savedArticleIds}
                                 currentUser={currentUser}
-                                setView={setView}
                                 dateFilter={dateFilter}
                                 categoryFilter={categoryFilter}
                             />
