@@ -1,46 +1,17 @@
 // src/components/SavedArticles.js
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrashCan } from '@fortawesome/free-solid-svg-icons';
 
-const SavedArticles = ({ currentUser, onArticleSelect, onArticleUnsave }) => {
-    const [savedArticles, setSavedArticles] = useState([]);
-    const [loading, setLoading] = useState(true);
-
-    const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'https://tech-news-aggregator-production.up.railway.app';
-
-    const fetchSavedArticles = async () => {
-        try {
-            const response = await fetch(`${API_BASE_URL}/api/bookmarks`, {
-                headers: {
-                    'X-User-Id': currentUser
-                }
-            });
-            if (!response.ok) {
-                throw new Error('Failed to fetch saved articles');
-            }
-            const data = await response.json();
-            setSavedArticles(data);
-        } catch (error) {
-            console.error("Error fetching saved articles:", error);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    useEffect(() => {
-        if (currentUser) {
-            fetchSavedArticles();
-        }
-    }, [currentUser]);
+const SavedArticles = ({ currentUser, onArticleSelect, onArticleUnsave, savedArticles }) => {
 
     const handleUnsave = async (articleId) => {
         await onArticleUnsave(articleId);
-        setSavedArticles(savedArticles.filter(article => article._id !== articleId));
+        // The list is re-rendered automatically when App.js updates the savedArticles prop
     };
 
-    if (loading) return <p className="text-center text-gray-500 mt-8 animate-pulse">Loading saved articles...</p>;
+    if (!currentUser) return <p className="text-center text-gray-500 mt-8">Please log in to view your saved articles.</p>;
     if (savedArticles.length === 0) return <p className="text-center text-gray-500 mt-8">No saved articles yet. Start saving articles from your news feed!</p>;
 
     return (

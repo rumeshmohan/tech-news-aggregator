@@ -21,6 +21,7 @@ function App() {
     const [categoryFilter, setCategoryFilter] = useState('');
     const [message, setMessage] = useState({ text: '', type: '' });
     const [savedArticleIds, setSavedArticleIds] = useState(new Set());
+    const [savedArticlesList, setSavedArticlesList] = useState([]);
 
     const availableCategories = ["AI/ML", "Startups", "Cybersecurity", "Mobile", "Web3"];
 
@@ -39,7 +40,7 @@ function App() {
         if (message.text) {
             const timer = setTimeout(() => {
                 setMessage({ text: '', type: '' });
-            }, 3000); // Message disappears after 3 seconds
+            }, 3000);
             return () => clearTimeout(timer);
         }
     }, [message]);
@@ -47,6 +48,7 @@ function App() {
     const fetchSavedArticles = useCallback(async () => {
         if (!currentUser) {
             setSavedArticleIds(new Set());
+            setSavedArticlesList([]);
             return;
         }
         try {
@@ -61,6 +63,7 @@ function App() {
             const data = await response.json();
             const ids = new Set(data.map(article => article._id));
             setSavedArticleIds(ids);
+            setSavedArticlesList(data);
         } catch (error) {
             console.error("Error fetching saved articles:", error);
         }
@@ -90,6 +93,7 @@ function App() {
         localStorage.removeItem('user_id');
         setCurrentUser(null);
         setSavedArticleIds(new Set());
+        setSavedArticlesList([]);
         setView('newsFeed');
     };
 
@@ -110,7 +114,8 @@ function App() {
             if (!response.ok) {
                 throw new Error('Failed to save article');
             }
-            setSavedArticleIds(prev => new Set(prev).add(articleId));
+            // After a successful save, re-fetch the list to keep everything in sync
+            fetchSavedArticles();
             showMessage('Article saved successfully!', 'success');
         } catch (error) {
             console.error("Error saving article:", error);
@@ -133,11 +138,8 @@ function App() {
             if (!response.ok) {
                 throw new Error('Failed to unsave article.');
             }
-            setSavedArticleIds(prev => {
-                const newSet = new Set(prev);
-                newSet.delete(articleId);
-                return newSet;
-            });
+            // After a successful unsave, re-fetch the list to keep everything in sync
+            fetchSavedArticles();
             showMessage("Article unsaved successfully!", "success");
         } catch (error) {
             console.error("Error unsaving article:", error);
@@ -253,6 +255,7 @@ function App() {
                                 onArticleSelect={handleArticleSelect}
                                 onArticleUnsave={handleArticleUnsave}
                                 currentUser={currentUser}
+                                savedArticles={savedArticlesList}
                             />
                         </div>
                     </main>
