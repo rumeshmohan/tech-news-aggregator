@@ -357,6 +357,9 @@ body {
   padding: 0.75rem;
   border-radius: 5px;
   font-size: 1rem;
+  background-color: var(--primary-bg);
+  color: var(--font-color);
+  border: 1px solid var(--border-color);
 }
 
 .auth-form button {

@@ -8,10 +8,8 @@ const getInitialTheme = () => {
   if (savedTheme) {
     return savedTheme;
   }
-  // If no saved theme, check the user's system preference
-  return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
-    ? 'dark'
-    : 'light';
+  // If no theme is saved, always default to 'light'
+  return 'light';
 };
 
 export const ThemeProvider = ({ children }) => {
