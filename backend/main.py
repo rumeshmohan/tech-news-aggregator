@@ -62,7 +62,7 @@ def analyze_sentiment(text: str) -> str:
         completion = groq_client.chat.completions.create(
             model=GROQ_MODEL,
             messages=[
-                {"role": "system", "content": "You are a sentiment analysis bot. Respond with only 'positive', 'negative', or 'neutral'."},
+                {"role": "system", "content": "You are a sentiment analysis bot. Respond with only 'Positive', 'Negative', or 'Neutral'."},
                 {"role": "user", "content": f"Analyze the sentiment of the following text:\n\nText: {text}"}
             ],
             temperature=0.0, # Set to 0 for consistent, non-creative responses
