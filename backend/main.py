@@ -104,13 +104,18 @@ def categorize_article(title: str, content: str) -> str:
         return "Miscellaneous"
 
 def fetch_and_store_news():
-    """Fetches news from RSS feeds and stores it in MongoDB. No article limit is applied."""
+    """Fetches news from RSS feeds and stores it in MongoDB, limited to 2 articles per website."""
     print("Fetching news data from RSS feeds...")
     for url in RSS_FEEDS:
         print(f"Fetching from {url}...")
         try:
             feed = feedparser.parse(url)
+            # Use a counter to limit articles per feed
+            article_count = 0 
             for entry in feed.entries:
+                if article_count >= 2:
+                    break # Stop processing after 2 articles
+                
                 try:
                     response = requests.get(entry.link, timeout=10)
                     soup = BeautifulSoup(response.content, 'lxml')
@@ -134,6 +139,7 @@ def fetch_and_store_news():
                         {"$set": article},
                         upsert=True
                     )
+                    article_count += 1
                     time.sleep(1) # Add a delay to avoid rate limiting
                 except Exception as e:
                     print(f"Error processing article from {url}: {e}")
