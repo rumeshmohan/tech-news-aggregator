@@ -1,3 +1,5 @@
+// src/components/NewsFeed.js
+
 import React, { useState, useEffect, useCallback } from 'react';
 import './NewsFeed.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -9,6 +11,8 @@ const NewsFeed = ({ onArticleSelect, onArticleUnsave, dateFilter, categoryFilter
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
+    const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'https://tech-news-aggregator-production.up.railway.app';
+
     // This function fetches the user's saved articles to determine which articles to mark as saved
     const fetchSavedArticles = useCallback(async () => {
         if (!currentUser) {
@@ -16,7 +20,7 @@ const NewsFeed = ({ onArticleSelect, onArticleUnsave, dateFilter, categoryFilter
             return;
         }
         try {
-            const response = await fetch('https://tech-news-aggregator-production.up.railway.app/api/bookmarks', {
+            const response = await fetch(`${API_BASE_URL}/api/bookmarks`, {
                 headers: {
                     'X-User-Id': currentUser
                 }
@@ -30,7 +34,7 @@ const NewsFeed = ({ onArticleSelect, onArticleUnsave, dateFilter, categoryFilter
         } catch (error) {
             console.error("Error fetching saved articles:", error);
         }
-    }, [currentUser]);
+    }, [currentUser, API_BASE_URL]);
 
     const handleToggleSave = async (articleId, e) => {
         e.stopPropagation();
@@ -43,7 +47,6 @@ const NewsFeed = ({ onArticleSelect, onArticleUnsave, dateFilter, categoryFilter
         const isSaved = savedArticleIds.has(articleId);
 
         if (isSaved) {
-            // Unsave the article
             try {
                 await onArticleUnsave(articleId);
                 setSavedArticleIds(prev => {
@@ -57,9 +60,8 @@ const NewsFeed = ({ onArticleSelect, onArticleUnsave, dateFilter, categoryFilter
                 alert(`Could not unsave the article: ${error.message}`);
             }
         } else {
-            // Save the article
             try {
-                const response = await fetch('https://tech-news-aggregator-production.up.railway.app/api/bookmarks', {
+                const response = await fetch(`${API_BASE_URL}/api/bookmarks`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -90,7 +92,7 @@ const NewsFeed = ({ onArticleSelect, onArticleUnsave, dateFilter, categoryFilter
             if (dateFilter) params.append('date_filter', dateFilter);
             if (categoryFilter) params.append('category', categoryFilter);
 
-            const response = await fetch(`https://tech-news-aggregator-production.up.railway.app/api/news?${params.toString()}`);
+            const response = await fetch(`${API_BASE_URL}/api/news?${params.toString()}`);
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
@@ -101,7 +103,7 @@ const NewsFeed = ({ onArticleSelect, onArticleUnsave, dateFilter, categoryFilter
         } finally {
             setLoading(false);
         }
-    }, [dateFilter, categoryFilter]);
+    }, [dateFilter, categoryFilter, API_BASE_URL]);
 
     useEffect(() => {
         fetchNews();

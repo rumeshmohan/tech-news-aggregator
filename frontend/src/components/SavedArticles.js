@@ -6,26 +6,28 @@ const SavedArticles = ({ currentUser, onArticleSelect, onArticleUnsave }) => {
     const [savedArticles, setSavedArticles] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        const fetchSavedArticles = async () => {
-            try {
-                const response = await fetch('https://tech-news-aggregator-production.up.railway.app/api/bookmarks', {
-                    headers: {
-                        'X-User-Id': currentUser
-                    }
-                });
-                if (!response.ok) {
-                    throw new Error('Failed to fetch saved articles');
-                }
-                const data = await response.json();
-                setSavedArticles(data);
-            } catch (error) {
-                console.error("Error fetching saved articles:", error);
-            } finally {
-                setLoading(false);
-            }
-        };
+    const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'https://tech-news-aggregator-production.up.railway.app';
 
+    const fetchSavedArticles = async () => {
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/bookmarks`, {
+                headers: {
+                    'X-User-Id': currentUser
+                }
+            });
+            if (!response.ok) {
+                throw new Error('Failed to fetch saved articles');
+            }
+            const data = await response.json();
+            setSavedArticles(data);
+        } catch (error) {
+            console.error("Error fetching saved articles:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
         if (currentUser) {
             fetchSavedArticles();
         }
@@ -58,7 +60,6 @@ const SavedArticles = ({ currentUser, onArticleSelect, onArticleUnsave }) => {
                             className="text-red-500 hover:text-red-700 transition-colors"
                             aria-label="Unsave article"
                         >
-                            {/* You can use an icon here, e.g., an X or a bookmark-slash icon */}
                             &times;
                         </button>
                     </div>
