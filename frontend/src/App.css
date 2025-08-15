@@ -1,152 +1,42 @@
-/* src/App.css */
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-:root {
-  --text-color-light: #333;
-  --background-color-light: #f4f7f6;
-  --card-bg-light: #ffffff;
-  --border-color-light: #e0e0e0;
-  --link-color-light: #007bff;
-  --header-bg-light: #ffffff;
-
-  --text-color-dark: #e0e0e0;
-  --background-color-dark: #121212;
-  --card-bg-dark: #1e1e1e;
-  --border-color-dark: #333333;
-  --link-color-dark: #6cb6ff;
-  --header-bg-dark: #1e1e1e;
-}
-
-.light-theme {
-  color: var(--text-color-light);
-  background-color: var(--background-color-light);
-}
-
-.dark-theme {
-  color: var(--text-color-dark);
-  background-color: var(--background-color-dark);
-}
-
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-.app-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1rem 2rem;
-  border-bottom: 1px solid var(--border-color-light);
-  position: sticky;
-  top: 0;
-  z-index: 1000;
-  background-color: var(--header-bg-light);
-}
-
-.dark-theme .app-header {
-  background-color: var(--header-bg-dark);
-  border-bottom: 1px solid var(--border-color-dark);
-}
-
-.app-header h1 {
-  font-size: 1.5rem;
-  margin: 0;
-}
-
-.header-controls {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.theme-toggle, .logout-button, .saved-articles-button {
-  background: none;
-  border: none;
-  color: var(--text-color-light);
-  cursor: pointer;
-  font-size: 1rem;
-}
-
-.dark-theme .theme-toggle, .dark-theme .logout-button, .dark-theme .saved-articles-button {
-  color: var(--text-color-dark);
-}
-
-main {
-  padding: 1rem 2rem;
-  max-width: 1200px;
+#root {
+  max-width: 1280px;
   margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
 }
 
-.dashboard-container {
-  display: grid;
-  grid-template-columns: 1fr 3fr;
-  gap: 2rem;
+.logo {
+  height: 6em;
+  padding: 1.5em;
+  will-change: filter;
+  transition: filter 300ms;
+}
+.logo:hover {
+  filter: drop-shadow(0 0 2em #646cffaa);
+}
+.logo.react:hover {
+  filter: drop-shadow(0 0 2em #61dafbaa);
 }
 
-.main-news-section {
-  display: flex;
-  flex-direction: column;
-}
-
-.filter-controls {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
-}
-
-.filter-controls button, .category-dropdown {
-  padding: 0.5rem 1rem;
-  border: 1px solid var(--border-color-light);
-  border-radius: 5px;
-  background-color: var(--card-bg-light);
-  cursor: pointer;
-  color: var(--text-color-light);
-}
-
-.dark-theme .filter-controls button, .dark-theme .category-dropdown {
-  background-color: var(--card-bg-dark);
-  border: 1px solid var(--border-color-dark);
-  color: var(--text-color-dark);
-}
-
-.filter-controls button.active {
-  background-color: var(--link-color-light);
-  color: white;
-  border-color: var(--link-color-light);
-}
-
-.dark-theme .filter-controls button.active {
-  background-color: var(--link-color-dark);
-  border-color: var(--link-color-dark);
-  color: #fff;
-}
-
-/* Toast message styles */
-.fixed {
-  position: fixed;
-  z-index: 1000;
-}
-.bottom-4 { bottom: 1rem; }
-.right-4 { right: 1rem; }
-.bg-green-500 { background-color: #22c55e; }
-.bg-red-500 { background-color: #ef4444; }
-.text-white { color: #fff; }
-.px-4 { padding-left: 1rem; padding-right: 1rem; }
-.py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
-.rounded { border-radius: 0.25rem; }
-.shadow-lg { box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); }
-
-/* Responsive styles */
-@media (max-width: 768px) {
-  .dashboard-container {
-    grid-template-columns: 1fr;
+@keyframes logo-spin {
+  from {
+    transform: rotate(0deg);
   }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  a:nth-of-type(2) .logo {
+    animation: logo-spin infinite 20s linear;
+  }
+}
+
+.card {
+  padding: 2em;
+}
+
+.read-the-docs {
+  color: #888;
 }

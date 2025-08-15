@@ -52,8 +52,8 @@ GROQ_MODEL = "llama-3.3-70b-versatile" # Using the fast Llama 3 8B model
 
 RSS_FEEDS = [
     "https://feeds.feedburner.com/TechCrunch/",
-    "https://www.theverge.com/rss/index.xml",
-    "https://hnrss.org/frontpage"
+    #"https://www.theverge.com/rss/index.xml",
+    #"https://hnrss.org/frontpage"
 ]
 
 def analyze_sentiment(text: str) -> str:
@@ -78,8 +78,10 @@ def analyze_sentiment(text: str) -> str:
 
 def categorize_article(title: str, content: str) -> str:
     """Uses Groq API to categorize an article."""
-    categories = ["AI/ML", "Startups", "Cybersecurity", "Mobile", "Web3"]
-    prompt = f"Categorize the following tech article into one of these categories: {', '.join(categories)}. Respond with only the category name, or 'Miscellaneous' if none apply.\n\nTitle: {title}\nContent: {content[:500]}..."
+    # Add "General Tech" to the list
+    categories = ["AI/ML", "Startups", "Cybersecurity", "Mobile", "Web3", "General Tech"]
+    
+    prompt = f"Categorize the following tech article into one of these categories: {', '.join(categories)}. Respond with only the category name. Choose the single best fit.\n\nTitle: {title}\nContent: {content[:500]}..."
     
     try:
         completion = groq_client.chat.completions.create(
@@ -97,11 +99,13 @@ def categorize_article(title: str, content: str) -> str:
             if cat.lower() in ai_response.lower():
                 return cat
         
-        return "Miscellaneous"
+        # If the AI fails, default to "General Tech"
+        return "General Tech" 
         
     except Exception as e:
         print(f"Error in categorization with Groq: {e}")
-        return "Miscellaneous"
+        # Also default to "General Tech" on error
+        return "General Tech"
 
 def fetch_and_store_news():
     """Fetches news from RSS feeds and stores it in MongoDB, limited to 2 articles per website."""
@@ -119,7 +123,7 @@ def fetch_and_store_news():
                 try:
                     response = requests.get(entry.link, timeout=10)
                     soup = BeautifulSoup(response.content, 'lxml')
-                    full_content = soup.body.get_text(strip=True, separator=' ')
+                    full_content = soup.get_text(strip=True, separator=' ')
                     
                     sentiment = analyze_sentiment(full_content)
                     category = categorize_article(entry.title, full_content)
@@ -346,6 +350,38 @@ def get_saved_articles(current_user: dict = Depends(get_current_user)):
     for article in saved_articles:
         article["_id"] = str(article["_id"])
     return saved_articles
+
+# main.py - Add these two new functions
+
+@app.delete("/api/bookmarks/all")
+def clear_all_bookmarks(current_user: dict = Depends(get_current_user)):
+    """Deletes all bookmarks for the current user."""
+    user_id = str(current_user["_id"])
+    
+    # Set the article_ids array to be empty
+    bookmarks_collection.update_one(
+        {"user_id": user_id},
+        {"$set": {"article_ids": []}}
+    )
+    
+    return {"message": "All bookmarks cleared successfully"}
+
+@app.delete("/api/bookmarks/{article_id}")
+def unsave_article(article_id: str, current_user: dict = Depends(get_current_user)):
+    """Deletes a specific bookmark for the current user."""
+    user_id = str(current_user["_id"])
+    
+    try:
+        # Use $pull to remove the specific ObjectId from the array
+        bookmarks_collection.update_one(
+            {"user_id": user_id},
+            {"$pull": {"article_ids": ObjectId(article_id)}}
+        )
+    except Exception:
+        # This can happen if the article_id is in an invalid format
+        raise HTTPException(status_code=400, detail="Invalid article ID format")
+
+    return {"message": "Article unsaved successfully"}
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
