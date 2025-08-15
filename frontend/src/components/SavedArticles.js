@@ -36,10 +36,7 @@ const SavedArticles = ({ currentUser, onArticleSelect, onArticleUnsave }) => {
     }, [currentUser]);
 
     const handleUnsave = async (articleId) => {
-        // App.js handles the API call and the alert message
         await onArticleUnsave(articleId);
-
-        // This removes the article from the UI instantly
         setSavedArticles(savedArticles.filter(article => article._id !== articleId));
     };
 
