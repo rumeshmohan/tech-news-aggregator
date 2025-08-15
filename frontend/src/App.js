@@ -1,5 +1,5 @@
 // src/App.js
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import './App.css';
 import NewsFeed from './components/NewsFeed';
 import ChatInterface from './components/ChatInterface';
@@ -7,8 +7,6 @@ import TrendingTopics from './components/TrendingTopics';
 import SavedArticles from './components/SavedArticles';
 import Login from './components/Login';
 import Signup from './components/Signup';
-
-// Import Font Awesome icons and components
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faMoon, faSun, faArrowLeft, faSave, faBookmark } from '@fortawesome/free-solid-svg-icons';
 
@@ -21,6 +19,7 @@ function App() {
     const [currentUser, setCurrentUser] = useState(null);
     const [dateFilter, setDateFilter] = useState('');
     const [categoryFilter, setCategoryFilter] = useState('');
+    const [message, setMessage] = useState({ text: '', type: '' });
 
     const availableCategories = ["AI/ML", "Startups", "Cybersecurity", "Mobile", "Web3"];
 
@@ -35,6 +34,19 @@ function App() {
         document.body.className = `${theme}-theme`;
     }, [theme]);
 
+    useEffect(() => {
+        if (message.text) {
+            const timer = setTimeout(() => {
+                setMessage({ text: '', type: '' });
+            }, 3000); // Message disappears after 3 seconds
+            return () => clearTimeout(timer);
+        }
+    }, [message]);
+
+    const showMessage = (text, type) => {
+        setMessage({ text, type });
+    };
+
     const toggleTheme = () => {
         setTheme(prevTheme => (prevTheme === 'light' ? 'dark' : 'light'));
     };
@@ -46,7 +58,7 @@ function App() {
     const handleBack = () => {
         setSelectedArticle(null);
     };
-    
+
     const handleLogout = () => {
         localStorage.removeItem('user_id');
         setCurrentUser(null);
@@ -55,7 +67,7 @@ function App() {
 
     const handleSaveArticle = async (articleId) => {
         if (!currentUser) {
-            alert("Please log in to save articles.");
+            showMessage("Please log in to save articles.", "error");
             return;
         }
         try {
@@ -70,17 +82,16 @@ function App() {
             if (!response.ok) {
                 throw new Error('Failed to save article');
             }
-            alert('Article saved successfully!');
+            showMessage('Article saved successfully!', 'success');
         } catch (error) {
             console.error("Error saving article:", error);
-            alert('Could not save the article.');
+            showMessage('Could not save the article.', 'error');
         }
     };
 
-    // New function to handle unsaving an article
     const handleArticleUnsave = async (articleId) => {
         if (!currentUser) {
-            alert("You must be logged in to unsave articles.");
+            showMessage("You must be logged in to unsave articles.", "error");
             return;
         }
         try {
@@ -93,11 +104,21 @@ function App() {
             if (!response.ok) {
                 throw new Error('Failed to unsave article.');
             }
-            console.log("Article unsaved successfully.");
+            showMessage("Article unsaved successfully!", "success");
         } catch (error) {
             console.error("Error unsaving article:", error);
-            alert('Could not unsave the article. Please try again.');
+            showMessage('Could not unsave the article. Please try again.', 'error');
         }
+    };
+
+    const renderMessage = () => {
+        if (!message.text) return null;
+        const messageClass = message.type === 'success' ? 'bg-green-500' : 'bg-red-500';
+        return (
+            <div className={`fixed bottom-4 right-4 text-white px-4 py-2 rounded shadow-lg ${messageClass} transition-opacity duration-500`}>
+                {message.text}
+            </div>
+        );
     };
 
     const renderContent = () => {
@@ -161,7 +182,7 @@ function App() {
                 </>
             );
         }
-        
+
         if (view === 'saved') {
             return (
                 <>
@@ -185,17 +206,17 @@ function App() {
                             <button onClick={() => setView('newsFeed')} className="back-button">
                                 <FontAwesomeIcon icon={faArrowLeft} /> Back to News Feed
                             </button>
-                            <SavedArticles 
-                                onArticleSelect={handleArticleSelect} 
-                                onArticleUnsave={handleArticleUnsave} 
-                                currentUser={currentUser} 
+                            <SavedArticles
+                                onArticleSelect={handleArticleSelect}
+                                onArticleUnsave={handleArticleUnsave}
+                                currentUser={currentUser}
                             />
                         </div>
                     </main>
                 </>
             );
         }
-        
+
         return (
             <>
                 <header className="app-header">
@@ -233,9 +254,9 @@ function App() {
                                 <button onClick={() => setDateFilter('this_month')} className={dateFilter === 'this_month' ? 'active' : ''}>
                                     This Month
                                 </button>
-                                <select 
-                                    className="category-dropdown" 
-                                    value={categoryFilter} 
+                                <select
+                                    className="category-dropdown"
+                                    value={categoryFilter}
                                     onChange={(e) => setCategoryFilter(e.target.value)}
                                 >
                                     <option value="">All Categories</option>
@@ -244,13 +265,13 @@ function App() {
                                     ))}
                                 </select>
                             </div>
-                            <NewsFeed 
-                                onArticleSelect={handleArticleSelect} 
-                                currentUser={currentUser} 
-                                setView={setView} 
-                                dateFilter={dateFilter} 
+                            <NewsFeed
+                                onArticleSelect={handleArticleSelect}
+                                currentUser={currentUser}
+                                setView={setView}
+                                dateFilter={dateFilter}
                                 categoryFilter={categoryFilter}
-                                onArticleUnsave={handleArticleUnsave} // Pass the unsave function to NewsFeed as well
+                                onArticleUnsave={handleArticleUnsave}
                             />
                         </div>
                     </div>
@@ -262,6 +283,7 @@ function App() {
     return (
         <>
             {renderContent()}
+            {renderMessage()}
         </>
     );
 }
