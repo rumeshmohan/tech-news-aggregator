@@ -1,5 +1,5 @@
 // src/App.js
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import './App.css';
 import NewsFeed from './components/NewsFeed';
 import ChatInterface from './components/ChatInterface';
@@ -20,6 +20,7 @@ function App() {
     const [dateFilter, setDateFilter] = useState('');
     const [categoryFilter, setCategoryFilter] = useState('');
     const [message, setMessage] = useState({ text: '', type: '' });
+    const [savedArticleIds, setSavedArticleIds] = useState(new Set());
 
     const availableCategories = ["AI/ML", "Startups", "Cybersecurity", "Mobile", "Web3"];
 
@@ -43,6 +44,32 @@ function App() {
         }
     }, [message]);
 
+    const fetchSavedArticles = useCallback(async () => {
+        if (!currentUser) {
+            setSavedArticleIds(new Set());
+            return;
+        }
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/bookmarks`, {
+                headers: {
+                    'X-User-Id': currentUser
+                }
+            });
+            if (!response.ok) {
+                throw new Error('Failed to fetch saved articles');
+            }
+            const data = await response.json();
+            const ids = new Set(data.map(article => article._id));
+            setSavedArticleIds(ids);
+        } catch (error) {
+            console.error("Error fetching saved articles:", error);
+        }
+    }, [currentUser]);
+
+    useEffect(() => {
+        fetchSavedArticles();
+    }, [currentUser, fetchSavedArticles]);
+
     const showMessage = (text, type) => {
         setMessage({ text, type });
     };
@@ -62,6 +89,7 @@ function App() {
     const handleLogout = () => {
         localStorage.removeItem('user_id');
         setCurrentUser(null);
+        setSavedArticleIds(new Set());
         setView('newsFeed');
     };
 
@@ -82,6 +110,7 @@ function App() {
             if (!response.ok) {
                 throw new Error('Failed to save article');
             }
+            setSavedArticleIds(prev => new Set(prev).add(articleId));
             showMessage('Article saved successfully!', 'success');
         } catch (error) {
             console.error("Error saving article:", error);
@@ -104,6 +133,11 @@ function App() {
             if (!response.ok) {
                 throw new Error('Failed to unsave article.');
             }
+            setSavedArticleIds(prev => {
+                const newSet = new Set(prev);
+                newSet.delete(articleId);
+                return newSet;
+            });
             showMessage("Article unsaved successfully!", "success");
         } catch (error) {
             console.error("Error unsaving article:", error);
@@ -130,6 +164,14 @@ function App() {
         }
 
         if (selectedArticle) {
+            const isSaved = savedArticleIds.has(selectedArticle._id);
+            const handleToggleSave = () => {
+                if (isSaved) {
+                    handleArticleUnsave(selectedArticle._id);
+                } else {
+                    handleSaveArticle(selectedArticle._id);
+                }
+            };
             return (
                 <>
                     <header className="app-header">
@@ -157,8 +199,9 @@ function App() {
                                     <FontAwesomeIcon icon={faArrowLeft} /> Back to News Feed
                                 </button>
                                 <div className="article-and-actions">
-                                    <button className="save-button" onClick={() => handleSaveArticle(selectedArticle._id)}>
-                                        <FontAwesomeIcon icon={faSave} /> Save Article
+                                    <button className="save-button" onClick={handleToggleSave}>
+                                        <FontAwesomeIcon icon={isSaved ? faBookmark : faSave} />
+                                        {isSaved ? ' Unsave Article' : ' Save Article'}
                                     </button>
                                 </div>
                             </div>
@@ -267,11 +310,13 @@ function App() {
                             </div>
                             <NewsFeed
                                 onArticleSelect={handleArticleSelect}
+                                onArticleUnsave={handleArticleUnsave}
+                                onSaveArticle={handleSaveArticle}
+                                savedArticleIds={savedArticleIds}
                                 currentUser={currentUser}
                                 setView={setView}
                                 dateFilter={dateFilter}
                                 categoryFilter={categoryFilter}
-                                onArticleUnsave={handleArticleUnsave}
                             />
                         </div>
                     </div>
