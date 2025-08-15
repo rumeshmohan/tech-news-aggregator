@@ -1,65 +1,95 @@
-// src/components/NewsFeed.js
 import React, { useState, useEffect, useCallback } from 'react';
 import './NewsFeed.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSpinner, faSave } from '@fortawesome/free-solid-svg-icons';
+import { faSpinner, faSave, faBookmark } from '@fortawesome/free-solid-svg-icons';
 
-// The NewsFeed component now accepts a 'currentUser' prop
-const NewsFeed = ({ onArticleSelect, dateFilter, categoryFilter, currentUser }) => {
+const NewsFeed = ({ onArticleSelect, onArticleUnsave, dateFilter, categoryFilter, currentUser }) => {
     const [articles, setArticles] = useState([]);
+    const [savedArticleIds, setSavedArticleIds] = useState(new Set());
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    // This function handles the API call to save an article
-    const handleSaveArticle = async (articleId, e) => {
-        // Prevents the parent div's onClick (to view the article) from firing
+    // This function fetches the user's saved articles to determine which articles to mark as saved
+    const fetchSavedArticles = useCallback(async () => {
+        if (!currentUser) {
+            setSavedArticleIds(new Set());
+            return;
+        }
+        try {
+            const response = await fetch('https://tech-news-aggregator-production.up.railway.app/api/bookmarks', {
+                headers: {
+                    'X-User-Id': currentUser
+                }
+            });
+            if (!response.ok) {
+                throw new Error('Failed to fetch saved articles');
+            }
+            const data = await response.json();
+            const ids = new Set(data.map(article => article._id));
+            setSavedArticleIds(ids);
+        } catch (error) {
+            console.error("Error fetching saved articles:", error);
+        }
+    }, [currentUser]);
+
+    const handleToggleSave = async (articleId, e) => {
         e.stopPropagation();
 
         if (!currentUser) {
-            alert("Please log in to save articles.");
+            alert("Please log in to save or unsave articles.");
             return;
         }
 
-        try {
-            // Note: The API_BASE_URL for the bookmarks endpoint is different from the news feed URL.
-            // This is the correct endpoint for saving articles.
-            const response = await fetch('https://tech-news-aggregator-production.up.railway.app/api/bookmarks', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    // Pass the user ID in a custom header for authentication
-                    'X-User-Id': currentUser
-                },
-                body: JSON.stringify({ article_id: articleId })
-            });
+        const isSaved = savedArticleIds.has(articleId);
 
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.detail || 'Failed to save article.');
+        if (isSaved) {
+            // Unsave the article
+            try {
+                await onArticleUnsave(articleId);
+                setSavedArticleIds(prev => {
+                    const newSet = new Set(prev);
+                    newSet.delete(articleId);
+                    return newSet;
+                });
+                alert('Article unsaved successfully!');
+            } catch (error) {
+                console.error("Error unsaving article:", error);
+                alert(`Could not unsave the article: ${error.message}`);
             }
+        } else {
+            // Save the article
+            try {
+                const response = await fetch('https://tech-news-aggregator-production.up.railway.app/api/bookmarks', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-User-Id': currentUser
+                    },
+                    body: JSON.stringify({ article_id: articleId })
+                });
 
-            alert('Article saved successfully!');
-        } catch (error) {
-            console.error("Error saving article:", error);
-            alert(`Could not save the article: ${error.message}`);
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || 'Failed to save article.');
+                }
+                
+                setSavedArticleIds(prev => new Set(prev).add(articleId));
+                alert('Article saved successfully!');
+            } catch (error) {
+                console.error("Error saving article:", error);
+                alert(`Could not save the article: ${error.message}`);
+            }
         }
     };
 
-    // Wrap fetchNews in useCallback to memoize it
     const fetchNews = useCallback(async () => {
         setLoading(true);
+        setError(null);
         try {
             const params = new URLSearchParams();
-            
-            if (dateFilter) {
-                params.append('date_filter', dateFilter);
-            }
-            
-            if (categoryFilter) {
-                params.append('category', categoryFilter);
-            }
+            if (dateFilter) params.append('date_filter', dateFilter);
+            if (categoryFilter) params.append('category', categoryFilter);
 
-            // This is the exact URL you specified, used for fetching news articles.
             const response = await fetch(`https://tech-news-aggregator-production.up.railway.app/api/news?${params.toString()}`);
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
@@ -71,12 +101,12 @@ const NewsFeed = ({ onArticleSelect, dateFilter, categoryFilter, currentUser }) 
         } finally {
             setLoading(false);
         }
-    }, [dateFilter, categoryFilter]); // fetchNews depends on these filters
+    }, [dateFilter, categoryFilter]);
 
-    // The useEffect hook now depends on the memoized function
     useEffect(() => {
         fetchNews();
-    }, [fetchNews]);
+        fetchSavedArticles();
+    }, [fetchNews, fetchSavedArticles]);
 
     if (loading) return <div className="news-feed-message"><FontAwesomeIcon icon={faSpinner} spin /> Loading news...</div>;
     if (error) return <div className="news-feed-message">Error fetching news: {error}</div>;
@@ -91,13 +121,13 @@ const NewsFeed = ({ onArticleSelect, dateFilter, categoryFilter, currentUser }) 
                             <p><strong>Source:</strong> {article.source}</p>
                             <p><strong>Published:</strong> {new Date(article.published).toLocaleDateString()}</p>
                             <p><strong>Category:</strong> {article.category}</p>
-                            {/* Conditionally render the button for logged-in users */}
                             {currentUser && (
                                 <button
                                     className="save-button"
-                                    onClick={(e) => handleSaveArticle(article._id, e)}
+                                    onClick={(e) => handleToggleSave(article._id, e)}
                                 >
-                                    <FontAwesomeIcon icon={faSave} /> Save
+                                    <FontAwesomeIcon icon={savedArticleIds.has(article._id) ? faBookmark : faSave} />
+                                    {savedArticleIds.has(article._id) ? ' Unsave' : ' Save'}
                                 </button>
                             )}
                         </div>
